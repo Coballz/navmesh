@@ -10,7 +10,6 @@ public class SimpleFSM : FSM
         Chase,
         Attack,
         Dead,
-        Evade,
         Flee
     }
 
@@ -22,7 +21,6 @@ public class SimpleFSM : FSM
 
     //Tank Rotation Speed
     private float curRotSpeed;
-    private float evadeRotSpeed;
 
     //Bullet
     public GameObject Bullet;
@@ -30,8 +28,6 @@ public class SimpleFSM : FSM
     //Whether the NPC is destroyed or not
     private bool bDead;
     private int health;
-    private float evadeDistance;
-
 
     //Initialize the Finite state machine for the NPC tank
     protected override void Initialize()
@@ -39,12 +35,10 @@ public class SimpleFSM : FSM
         curState = FSMState.Patrol;
         curSpeed = 150.0f;
         curRotSpeed = 1.5f;
-        evadeRotSpeed = 5.0f;
         bDead = false;
         elapsedTime = 0.0f;
         shootRate = 3.0f;
         health = 100;
-        evadeDistance = 250f;
 
         //Get the list of points
         pointList = GameObject.FindGameObjectsWithTag("WandarPoint");
@@ -75,7 +69,6 @@ public class SimpleFSM : FSM
             case FSMState.Attack: UpdateAttackState(); break;
             case FSMState.Dead: UpdateDeadState(); break;
             case FSMState.Flee: UpdateFleeState(); break;
-            case FSMState.Evade: UpdateEvadeState(); break;
         }
 
         //Update the time
@@ -91,19 +84,6 @@ public class SimpleFSM : FSM
     /// </summary>
     protected void UpdatePatrolState()
     {
-        //Check if there is a tank to be evaded
-        foreach (GameObject tank in tankList)
-        {
-            //print("This is " + gameObject.name + " checking out " + tank.gameObject.name);
-            if (ShouldEvade(tank))
-            {
-                print(gameObject.name + " evading " + tank.gameObject.name + ", set evasion point from " + transform.position + " to " + destPos);
-                curState = FSMState.Evade;
-
-                return;
-            }
-        }
-
         //Check the distance with player tank
         //When the distance is near, transition to chase state
         if (Vector3.Distance(transform.position, playerTransform.position) <= 300.0f)
@@ -141,16 +121,7 @@ public class SimpleFSM : FSM
     /// Chase state
     /// </summary>
     protected void UpdateChaseState()
-    {
-        foreach (GameObject tank in tankList)
-        {
-            //print("This is " + gameObject.name + " checking out " + tank.gameObject.name);
-            if (ShouldEvade(tank))
-            {
-                curState = FSMState.Evade;
-                return;
-            }
-        }
+    {       
         //Set the target position as the player position
         destPos = playerTransform.position;
 
@@ -242,50 +213,6 @@ public class SimpleFSM : FSM
         transform.Translate(Vector3.forward * Time.deltaTime * curSpeed);
     }
 
-    //Evade state
-    protected void UpdateEvadeState()
-    {
-        Vector3 targetPos = new Vector3(0, 0, 0);
-        int nofTanks = 0;
-        foreach (GameObject tank in tankList)
-        {
-            if (ShouldEvade(tank))
-            {
-                targetPos += tank.transform.position;
-                nofTanks++;
-            }
-        }
-
-        if (nofTanks == 0)
-        {
-            FindNextPoint();
-            curState = FSMState.Patrol;
-            return;
-        }
-        else
-        {
-
-            targetPos /= nofTanks;
-            print(gameObject.name + ", " + targetPos);
-            targetPos -= transform.position;
-            targetPos *= -100;
-            destPos = targetPos;
-
-            if (Vector3.Distance(transform.position, destPos) > 25.0f)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(destPos - transform.position);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * evadeRotSpeed);
-
-                transform.Translate(Vector3.forward * Time.deltaTime * curSpeed);
-            }
-            else
-            {
-                FindNextPoint();
-                curState = FSMState.Patrol;
-            }
-        }
-    }
-
     /// <summary>
     /// Dead state
     /// </summary>
@@ -350,19 +277,6 @@ public class SimpleFSM : FSM
             rndPosition = new Vector3(Random.Range(-rndRadius, rndRadius), 0.0f, Random.Range(-rndRadius, rndRadius));
             destPos = pointList[rndIndex].transform.position + rndPosition;
         }
-    }
-
-    protected bool ShouldEvade(GameObject tank)
-    {
-        if (tank != null && tank.gameObject.name != this.gameObject.name)
-        {
-            if (Vector3.Distance(tank.transform.position, transform.position) <= 200)
-            {
-                return true;
-            }
-            else return false;
-        }
-        else return false;
     }
 
     /// <summary>
