@@ -38,8 +38,8 @@ public class SimpleFSM : FSM
     protected override void Initialize()
     {
         curState = FSMState.Patrol;
-        curSpeed = 150.0f;
-        curRotSpeed = 1.5f;
+        agent.speed = 150.0f;
+        agent.angularSpeed = 90.0f;
         bDead = false;
         elapsedTime = 0.0f;
         shootRate = 3.0f;
@@ -98,6 +98,11 @@ public class SimpleFSM : FSM
         MoveTank();
     }
 
+    protected void FindNextPoint()
+    {
+
+    }
+
     /// <summary>
     /// Chase state
     /// </summary>
@@ -127,25 +132,7 @@ public class SimpleFSM : FSM
     /// Attack state
     /// </summary>
     protected void UpdateAttackState()
-    {
-        //Set the target position as the player position
-        //TODO: Set target position to center of target squadron
-
-        //Check the distance with the player tank
-        //TODO: calc distance to center of target squadron
-        float dist = Vector3.Distance(transform.position, targetPos);
-        if (dist >= 200.0f && dist < 300.0f)
-        {
-            //Move the tank and move to chaseState
-            MoveTank();
-            curState = FSMState.Chase;
-        }
-        //Transition to patrol is the tank become too far
-        else if (dist >= 300.0f)
-            curState = FSMState.Patrol;
-
-        //TODO: Target selection
-        //TODO: Target selection
+    { 
 
         //Rotate the turret towards the target
         Quaternion turretRotation = Quaternion.LookRotation(destPos - turret.position);
@@ -175,11 +162,6 @@ public class SimpleFSM : FSM
         }
 
         MoveTank();
-    }
-
-    protected void FindNextPoint()
-    {
-        
     }
 
     /// <summary>
@@ -251,13 +233,7 @@ public class SimpleFSM : FSM
 
     protected void MoveTank()
     {
-        //Acquire target rotation for tank movement
-        //Quaternion targetRotation = Quaternion.LookRotation(destPos - transform.position);
-        //transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * curRotSpeed);
-
-        //Go Forward
         //transform.Translate(Vector3.forward * Time.deltaTime * curSpeed);
-
-        agent.SetDestination(target);
+        agent.SetDestination(targetPos);
     }
 }
