@@ -94,4 +94,41 @@ public class GhostFreeRoamCamera : MonoBehaviour
             deltaPosition += directionVector;
         }
     }
+
+    float distToClosestTank = 300.0f;
+    GameObject targetTank;
+
+    GameObject GetClosestEnemyTank()
+    {
+        foreach (GameObject tank in squadOneTanks)
+        {
+            UpdateClosestTank(tank);
+        }
+
+        foreach (GameObject tank in squadTwoTanks)
+        {
+            UpdateClosestTank(tank);
+        }
+
+        foreach (GameObject tank in squadThreeTanks)
+        {
+            UpdateClosestTank(tank);
+        }
+
+        if (targetTank != null)
+        {
+            return targetTank;
+        }
+        return null;
+    }
+
+    void UpdateClosestTank(GameObject tank)
+    {
+        float distance = Vector3.Distance(transform.position, tank.transform.position);
+        if (tank != null && distance < distToClosestTank)
+        {
+            distToClosestTank = distance;
+            targetTank = tank;
+        }
+    }
 }
