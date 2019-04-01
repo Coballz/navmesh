@@ -67,13 +67,13 @@ public class TankAI : FSM
         turret.rotation = Quaternion.Slerp(turret.rotation, turretRotation, Time.deltaTime * ruleset.rotationSpeed);
     }
 
-    public void SetTargetTank(GameObject targetTank)
+    public void SetTargetTank(GameObject targetEnemyTank)
     {
-
+        this.targetTank = targetEnemyTank;
     }
 
-    public void SetFlockingPosition(Vector3 flockingPosition)
+    public void SetFlockingPosition(Vector3 newFlockingPosition)
     {
-
+        this.flockingPosition = newFlockingPosition;
     }
 }
