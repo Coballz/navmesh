@@ -2,26 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using static Ruleset;
 
 public class TankAI : FSM
 {
+    public NavMeshAgent agent;
     private Vector3 flockingPosition;
     private Vector3 targetPosition;
     private GameObject targetTank;
     private GameObject bullet;
-    public NavMeshAgent agent;
     private FSMState currentState;
     private SquadAI squadAI;
-
-    public enum FSMState
-    {
-        None,
-        Patrol,
-        Chase,
-        Attack,
-        Dead,
-        Flee
-    }
 
     private Ruleset ruleset;
 
@@ -47,7 +38,6 @@ public class TankAI : FSM
 
     private void HandleMovement()
     {
-        Vector3 targetPosition = TargetPosition();
         HandleRotation(targetPosition);
         agent.SetDestination(targetPosition);
     }
@@ -72,14 +62,20 @@ public class TankAI : FSM
         turret.rotation = Quaternion.Slerp(turret.rotation, turretRotation, Time.deltaTime * ruleset.rotationSpeed);
     }
 
-    public void SetTargetTank(GameObject targetEnemyTank)
+    private Vector3 Combine()
     {
-        this.targetTank = targetEnemyTank;
-    }
+        Vector3 cohesion = CalculateCohesion();
+        Vector3 alignment = CalculateAlignment();
+        Vector3 separation = CalculateSeparation();
 
-    public void SetFlockingPosition(Vector3 newFlockingPosition)
-    {
-        this.flockingPosition = newFlockingPosition;
+        float totalMag = cohesion.magnitude + alignment.magnitude + separation.magnitude;
+
+        Vector3 cohModified = cohesion * (cohesion.magnitude / totalMag);
+        Vector3 aliModified = alignment * (alignment.magnitude / totalMag);
+        Vector3 sepModified = separation * (separation.magnitude / totalMag);
+
+        Vector3 targetPoint = cohModified + aliModified + sepModified;
+        return targetPoint;
     }
 
     private Vector3 CalculateCohesion()
@@ -107,20 +103,31 @@ public class TankAI : FSM
 
     private Vector3 CalculateSeparation()
     {
-        return new Vector3();
+        Vector3 separation = new Vector3();
+        foreach (GameObject tank in squadAI.ownTanks)
+        {
+            if (tank != null && tank != gameObject)
+            {
+                Vector3 diff = transform.position - tank.transform.position;
+                if (diff.magnitude > 0)
+                    separation += (diff.normalized / (diff.magnitude * diff.magnitude));
+            }
+        }
+        return separation;
     }
 
     private Vector3 CalculateAlignment()
     {
-        
-        return new Vector3();
+        return targetPosition - transform.position;
     }
 
-    private void Combine()
+    public void SetTargetTank(GameObject targetEnemyTank)
     {
-        Vector3 cohesion = CalculateCohesion();
-        Vector3 alignemnt = CalculateAlignment();
-        Vector3 separation = CalculateSeparation();
+        this.targetTank = targetEnemyTank;
+    }
 
+    public void SetFlockingPosition(Vector3 newFlockingPosition)
+    {
+        this.flockingPosition = newFlockingPosition;
     }
 }

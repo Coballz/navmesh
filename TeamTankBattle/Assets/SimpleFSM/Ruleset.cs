@@ -10,4 +10,15 @@ public class Ruleset : ScriptableObject
     public float spottingRange = 300.0f;
     public float attackRange = 150.0f;
     public float rotationSpeed = 5.0f;
+    public float fireRate = 3.0f;
+
+    public enum FSMState
+    {
+        None,
+        Patrol,
+        Chase,
+        Attack,
+        Dead,
+        FocusFire
+    }
 }
