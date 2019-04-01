@@ -4,10 +4,6 @@ using System.Collections.Generic;
 
 public class FSM : MonoBehaviour 
 {
-    //Next destination position of the NPC Tank
-    protected Vector3 destPos;
-    protected Vector3 targetPos;
-
     //List of points for patrolling
 
     //Bullet shooting rate

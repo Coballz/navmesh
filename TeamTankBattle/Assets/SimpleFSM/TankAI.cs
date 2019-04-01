@@ -36,7 +36,6 @@ public class TankAI : FSM
     void Update()
     {
         HandleMovement();
-        HandleRotation();
     }
 
     void SetState(FSMState state)
@@ -47,15 +46,22 @@ public class TankAI : FSM
     private void HandleMovement()
     {
         Vector3 targetPosition = TargetPosition();
+        HandleRotation(targetPosition);
+        agent.SetDestination(targetPosition);
     }
 
     private Vector3 TargetPosition()
     {
+        float distanceToPoint = Vector3.Distance(transform.position, targetPosition);
+        float distanceToFlock = Vector3.Distance(transform.position, flockingPosition);
+        float pointWeight = distanceToPoint / (distanceToPoint + distanceToFlock);
+        float flockWeight = distanceToFlock / (distanceToPoint + distanceToFlock);
+        Vector3 endPoint = ((targetPosition - transform.position) * pointWeight) + ((flockingPosition - transform.position) * flockWeight);
         //TODO: Middelen flockingPosition en targetTank.transform.position
-        return Vector3.zero;
+        return endPoint;
     }
 
-    private void HandleRotation()
+    private void HandleRotation(Vector3 destPos)
     {
         Quaternion turretRotation = Quaternion.LookRotation(destPos - turret.position);
         turret.rotation = Quaternion.Slerp(turret.rotation, turretRotation, Time.deltaTime * ruleset.rotationSpeed);

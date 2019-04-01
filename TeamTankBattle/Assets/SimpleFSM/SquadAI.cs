@@ -35,7 +35,7 @@ public class SquadAI : MonoBehaviour
         GameObject closestTank = GetClosestEnemyTank(); //Get the closest enemy tank
         if (closestTank != null)                        //If it's still in game
         {
-            FSMState targetState = logic();             //Determine what states our squad should be in
+            FSMState targetState = SquadLogic();             //Determine what states our squad should be in
             UpdateFlockingPosition();
             foreach (GameObject tank in ownTanks)       //Then for each of our own tanks:
             {
@@ -51,6 +51,7 @@ public class SquadAI : MonoBehaviour
     {
         if (distToClosestTank < 300)            //MAGIC NUMBER VERWIJDEREN
             return FSMState.Attack;
+        return FSMState.Patrol;
     }
 
     //Loops through all enemy tanks and updates the targetTank if it finds one that is closer
