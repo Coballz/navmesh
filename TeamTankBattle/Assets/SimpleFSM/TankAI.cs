@@ -38,7 +38,7 @@ public class TankAI : FSM
         HandleMovement();
     }
 
-    void SetState(FSMState state)
+    public void SetState(FSMState state)
     {
         this.currentState = state;
     }
@@ -65,5 +65,15 @@ public class TankAI : FSM
     {
         Quaternion turretRotation = Quaternion.LookRotation(destPos - turret.position);
         turret.rotation = Quaternion.Slerp(turret.rotation, turretRotation, Time.deltaTime * ruleset.rotationSpeed);
+    }
+
+    public void SetTargetTank(GameObject targetTank)
+    {
+
+    }
+
+    public void SetFlockingPosition(Vector3 flockingPosition)
+    {
+
     }
 }

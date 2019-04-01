@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class SquadAI : MonoBehaviour
 {
@@ -10,7 +12,7 @@ public class SquadAI : MonoBehaviour
 
     private GameObject targetTank;              //The tank to be used for the state logic
     private Vector3 flockingPosition;           //The average position of our own squad
-    private list<Vector3> patrolPoints;         //The positions used for patrolling
+    private List<Vector3> patrolPoints;         //The positions used for patrolling
 
     private float distToClosestTank = 300.0f;   //Minimum distance for patrol state
 
@@ -39,9 +41,10 @@ public class SquadAI : MonoBehaviour
             UpdateFlockingPosition();
             foreach (GameObject tank in ownTanks)       //Then for each of our own tanks:
             {
-                tank.SetState(targetState);                 //Update the state
-                tank.SetTargetTank(closestTank);            //Update the target enemy tank
-                tank.SetFlockingPosition(flockingPosition); //Make sure it knows the average position of our squad
+                TankAI tankScript = tank.GetComponent<TankAI>();
+                tankScript.SetState(targetState);                 //Update the state
+                tankScript.SetTargetTank(closestTank);            //Update the target enemy tank
+                tankScript.SetFlockingPosition(flockingPosition); //Make sure it knows the average position of our squad
             }
         }
     }
@@ -82,7 +85,7 @@ public class SquadAI : MonoBehaviour
     //Updates the average position of our own squad
     private void UpdateFlockingPosition()
     {
-        Vector3 totalPosition;
+        Vector3 totalPosition = new Vector3();
         int nTanks = 0;
 
         foreach (GameObject tank in ownTanks)
@@ -100,15 +103,15 @@ public class SquadAI : MonoBehaviour
 
     //Checks whether the tank is closer than the current targetTank
     //Note: Uses the flockingPosition calculated by UpdateFlockingPosition()
-    private void UpdateClosestTank(GameObject tank)
+    private void UpdateClosestTank(GameObject enemyTank)
     {
         foreach (GameObject tank in ownTanks)
         {
-            float distance = Vector3.Distance(flockingPosition, tank.transform.position);
+            float distance = Vector3.Distance(flockingPosition, enemyTank.transform.position);
             if (tank != null && distance < distToClosestTank)
             {
                 distToClosestTank = distance;
-                targetTank = tank;
+                targetTank = enemyTank;
             }
         }
     }

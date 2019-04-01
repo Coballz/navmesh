@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Ruleset", menuName = "Ruleset", order = 51)]
+[CreateAssetMenu(fileName = "New Ruleset", menuName = "Ruleset", order = 1)]
 public class Ruleset : ScriptableObject
 {
     public float moveSpeed = 150.0f;
