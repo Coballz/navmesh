@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class SquadAI : MonoBehaviour
 {
-    private GameObject[] ownTanks;              //List with our own tanks
+    public GameObject[] ownTanks;              //List with our own tanks
 
     private GameObject[] squadOneTanks;         //enemy team one
     private GameObject[] squadTwoTanks;         //enemy team two
