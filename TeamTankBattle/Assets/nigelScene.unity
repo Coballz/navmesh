@@ -1193,7 +1193,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e98335b0994c80e47b748ade78158963, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetMarker: {fileID: 867211587}
 --- !u!23 &867211584
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1336,6 +1335,10 @@ PrefabInstance:
     - target: {fileID: 400002, guid: fa52bf9146a2dc247ad95c9d06202166, type: 3}
       propertyPath: m_LocalScale.z
       value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 11400000, guid: fa52bf9146a2dc247ad95c9d06202166, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fa52bf9146a2dc247ad95c9d06202166, type: 3}

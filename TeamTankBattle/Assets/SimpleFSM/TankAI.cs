@@ -7,7 +7,6 @@ using static Ruleset;
 public class TankAI : FSM
 {
     public NavMeshAgent agent;
-    private Vector3 flockingPosition;
     public Vector3 targetPosition;
     private GameObject targetTank;
     private GameObject bullet;
@@ -64,10 +63,6 @@ public class TankAI : FSM
 
         print(this.name + ", " + cohesion + ", " + alignment + ", " + separation);
 
-        //Vector3 cohModified = cohesion * (cohesion.magnitude / totalMag);
-        //Vector3 aliModified = alignment * (alignment.magnitude / totalMag);
-        //Vector3 sepModified = separation * (separation.magnitude / totalMag);
-
         Vector3 targetPoint = cohesion + separation + alignment;
         return targetPoint.normalized;
     }
@@ -119,10 +114,5 @@ public class TankAI : FSM
     public void SetTargetTank(GameObject targetEnemyTank)
     {
         this.targetTank = targetEnemyTank;
-    }
-
-    public void SetFlockingPosition(Vector3 newFlockingPosition)
-    {
-        this.flockingPosition = newFlockingPosition;
     }
 }

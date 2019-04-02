@@ -17,83 +17,61 @@ public class SquadAI : MonoBehaviour
 
     private Ruleset ruleset;
 
-    private float distToClosestTank = 300.0f;   //Minimum distance for patrol state
+    private float distToClosestTank = 0;   //Minimum distance for patrol state
 
     void Start()
     {
         SetOwnTanks();
         SetEnemyTanks();                        //Make sure we know abut the enemy tanks at start
         InitializePatrolPoints();               //Make sure we can start patrolling right away
-        InitializeRuleset();
+        InitializeRuleset();                    //Make sure all rules are enforced
+        CycleEnemyTanks();                      //Determine whether there's a tank to chase
     }
 
     private void Update()
     {
-        //GameObject closestTank = GetClosestEnemyTank(); //Get the closest enemy tank
-        //if (closestTank != null)                        //If it's still in game
-        //{
-        //    FSMState targetState = SquadLogic();             //Determine what states our squad should be in
-        //    UpdateFlockingPosition();
-        //    foreach (GameObject tank in ownTanks)       //Then for each of our own tanks:
-        //    {
-        //        TankAI tankScript = tank.GetComponent<TankAI>();
-        //        tankScript.SetState(targetState);                 //Update the state
-        //        tankScript.SetTargetTank(closestTank);            //Update the target enemy tank
-        //        tankScript.SetFlockingPosition(flockingPosition); //Make sure it knows the average position of our squad
-        //    }
-        //}
+        CycleEnemyTanks(); //Get the closest enemy tank
+        if (targetTank != null)                        //Make sure it's not a reference to a dead tank
+        {
+            FSMState targetState = SquadLogic(targetTank);             //Determine what states our squad should be in
+            foreach (GameObject tank in ownTanks)                        //Then for each of our own tanks:
+            {
+                TankAI tankScript = tank.GetComponent<TankAI>();        //Retrieve their tankAI
+                tankScript.SetState(targetState);                       //Update the state
+                tankScript.SetTargetTank(targetTank);                  //Update the target enemy tank
+            }
+        }
     }
 
     //Determines what state the tanks should be set to
-    private FSMState SquadLogic()
+    private FSMState SquadLogic(GameObject tank)
     {
-        if (distToClosestTank < )            //MAGIC NUMBER VERWIJDEREN
-            return FSMState.Attack;
+        if (distToClosestTank <= ruleset.spottingRange)            //MAGIC NUMBER VERWIJDEREN
+        {
+            if (distToClosestTank <= ruleset.attackRange)
+                return FSMState.Attack;
+            return FSMState.Chase;
+        }
         return FSMState.Patrol;
     }
 
     //Loops through all enemy tanks and updates the targetTank if it finds one that is closer
-    private GameObject GetClosestEnemyTank()
+    private void CycleEnemyTanks()
     {
-        //foreach (GameObject tank in squadOneTanks)
-        //{
-        //    UpdateClosestTank(tank);
-        //}
-
-        //foreach (GameObject tank in squadTwoTanks)
-        //{
-        //    UpdateClosestTank(tank);
-        //}
-
-        //foreach (GameObject tank in squadThreeTanks)
-        //{
-        //    UpdateClosestTank(tank);
-        //}
-
-        //if (targetTank != null)
-        //{
-        //    return targetTank;
-        //}
-        return null;
-    }
-
-    //Updates the average position of our own squad
-    private void UpdateFlockingPosition()
-    {
-        Vector3 totalPosition = new Vector3();
-        int nTanks = 0;
-
-        foreach (GameObject tank in ownTanks)
+        foreach (GameObject tank in squadOneTanks)
         {
-            if (tank != null)
-            {
-                nTanks++;
-                totalPosition += tank.transform.position;
-            }
+            UpdateClosestTank(tank);
         }
 
-        if (nTanks >= 1)
-            flockingPosition = totalPosition / nTanks;
+        foreach (GameObject tank in squadTwoTanks)
+        {
+            UpdateClosestTank(tank);
+        }
+
+        foreach (GameObject tank in squadThreeTanks)
+        {
+            UpdateClosestTank(tank);
+        }
     }
 
     //Checks whether the tank is closer than the current targetTank
@@ -103,7 +81,7 @@ public class SquadAI : MonoBehaviour
         foreach (GameObject tank in ownTanks)
         {
             float distance = Vector3.Distance(flockingPosition, enemyTank.transform.position);
-            if (tank != null && distance < distToClosestTank)
+            if ((tank != null && distance < distToClosestTank) || distToClosestTank == 0)
             {
                 distToClosestTank = distance;
                 targetTank = enemyTank;
@@ -140,7 +118,7 @@ public class SquadAI : MonoBehaviour
         patrolPoints.Add(new Vector3(2330, 100, 820));
         patrolPoints.Add(new Vector3(1960, 100, 1180));
 
-        //Return along the same patrol
+        //Return along the same patrolpoints
         patrolPoints.Add(new Vector3(1440, 100, 890));
         patrolPoints.Add(new Vector3(740, 100, 880));
         patrolPoints.Add(new Vector3(570, 100, 1420));
