@@ -30,17 +30,17 @@ public class SquadAI : MonoBehaviour
 
     private void Update()
     {
-        CycleEnemyTanks(); //Get the closest enemy tank
-        if (targetTank != null)                        //Make sure it's not a reference to a dead tank
-        {
-            FSMState targetState = SquadLogic(targetTank);             //Determine what states our squad should be in
-            foreach (GameObject tank in ownTanks)                        //Then for each of our own tanks:
-            {
-                TankAI tankScript = tank.GetComponent<TankAI>();        //Retrieve their tankAI
-                tankScript.SetState(targetState);                       //Update the state
-                tankScript.SetTargetTank(targetTank);                  //Update the target enemy tank
-            }
-        }
+        //CycleEnemyTanks(); //Get the closest enemy tank
+        //if (targetTank != null)                        //Make sure it's not a reference to a dead tank
+        //{
+        //    FSMState targetState = SquadLogic(targetTank);             //Determine what states our squad should be in
+        //    foreach (GameObject tank in ownTanks)                        //Then for each of our own tanks:
+        //    {
+        //        TankAI tankScript = tank.GetComponent<TankAI>();        //Retrieve their tankAI
+        //        tankScript.SetState(targetState);                       //Update the state
+        //        tankScript.SetTargetTank(targetTank);                  //Update the target enemy tank
+        //    }
+        //}
     }
 
     //Determines what state the tanks should be set to

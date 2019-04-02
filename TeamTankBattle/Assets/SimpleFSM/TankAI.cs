@@ -19,7 +19,7 @@ public class TankAI : FSM
     void Start()
     {
         squadAI = GetComponent<SquadAI>();
-        ruleset = squadAI.GetComponent<Ruleset>();
+        ruleset = ScriptableObject.CreateInstance("Ruleset") as Ruleset;
         turret = gameObject.transform.GetChild(0).transform;
         bulletSpawnPoint = turret.GetChild(0).transform;
     }
@@ -51,7 +51,7 @@ public class TankAI : FSM
 
     private void HandleRotation(Vector3 destPos)
     {
-        Quaternion turretRotation = Quaternion.LookRotation(destPos - turret.position);
+        Quaternion turretRotation = Quaternion.LookRotation(targetPosition - turret.position);
         turret.rotation = Quaternion.Slerp(turret.rotation, turretRotation, Time.deltaTime * ruleset.rotationSpeed);
     }
 
