@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Ruleset;
 
 public class SquadAI : MonoBehaviour
 {
@@ -16,37 +17,28 @@ public class SquadAI : MonoBehaviour
 
     private float distToClosestTank = 300.0f;   //Minimum distance for patrol state
 
-    private enum FSMState                       //States to put the individual tanks in
-    {   
-        None,
-        Patrol,
-        Chase,
-        Attack,
-        Dead,
-        FocusFire
-    }
-
-    void Initialize()
+    void Start()
     {
-        UpdateEnemySquads();                    //Make sure we know abut the enemy tanks at start
+        SetOwnTanks();
+        SetEnemyTanks();                        //Make sure we know abut the enemy tanks at start
         InitializePatrolPoints();               //Make sure we can start patrolling right away
     }
 
     private void Update()
     {
-        GameObject closestTank = GetClosestEnemyTank(); //Get the closest enemy tank
-        if (closestTank != null)                        //If it's still in game
-        {
-            FSMState targetState = SquadLogic();             //Determine what states our squad should be in
-            UpdateFlockingPosition();
-            foreach (GameObject tank in ownTanks)       //Then for each of our own tanks:
-            {
-                TankAI tankScript = tank.GetComponent<TankAI>();
-                tankScript.SetState(targetState);                 //Update the state
-                tankScript.SetTargetTank(closestTank);            //Update the target enemy tank
-                tankScript.SetFlockingPosition(flockingPosition); //Make sure it knows the average position of our squad
-            }
-        }
+        //GameObject closestTank = GetClosestEnemyTank(); //Get the closest enemy tank
+        //if (closestTank != null)                        //If it's still in game
+        //{
+        //    FSMState targetState = SquadLogic();             //Determine what states our squad should be in
+        //    UpdateFlockingPosition();
+        //    foreach (GameObject tank in ownTanks)       //Then for each of our own tanks:
+        //    {
+        //        TankAI tankScript = tank.GetComponent<TankAI>();
+        //        tankScript.SetState(targetState);                 //Update the state
+        //        tankScript.SetTargetTank(closestTank);            //Update the target enemy tank
+        //        tankScript.SetFlockingPosition(flockingPosition); //Make sure it knows the average position of our squad
+        //    }
+        //}
     }
 
     //Determines what state the tanks should be set to
@@ -60,25 +52,25 @@ public class SquadAI : MonoBehaviour
     //Loops through all enemy tanks and updates the targetTank if it finds one that is closer
     private GameObject GetClosestEnemyTank()
     {
-        foreach (GameObject tank in squadOneTanks)
-        {
-            UpdateClosestTank(tank);
-        }
+        //foreach (GameObject tank in squadOneTanks)
+        //{
+        //    UpdateClosestTank(tank);
+        //}
 
-        foreach (GameObject tank in squadTwoTanks)
-        {
-            UpdateClosestTank(tank);
-        }
+        //foreach (GameObject tank in squadTwoTanks)
+        //{
+        //    UpdateClosestTank(tank);
+        //}
 
-        foreach (GameObject tank in squadThreeTanks)
-        {
-            UpdateClosestTank(tank);
-        }
+        //foreach (GameObject tank in squadThreeTanks)
+        //{
+        //    UpdateClosestTank(tank);
+        //}
 
-        if (targetTank != null)
-        {
-            return targetTank;
-        }
+        //if (targetTank != null)
+        //{
+        //    return targetTank;
+        //}
         return null;
     }
 
@@ -116,8 +108,13 @@ public class SquadAI : MonoBehaviour
         }
     }
 
+    protected void SetOwnTanks()
+    {
+        ownTanks = GameObject.FindGameObjectsWithTag("Team4");
+    }
+
     //Gets all enemy tanks and adds them to the GameObject lists
-    void UpdateEnemySquads()
+    protected void SetEnemyTanks()
     {
         squadOneTanks = GameObject.FindGameObjectsWithTag("squadOneTank");
         squadOneTanks = GameObject.FindGameObjectsWithTag("squadTwoTank");

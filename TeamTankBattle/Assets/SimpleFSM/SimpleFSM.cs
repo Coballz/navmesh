@@ -33,6 +33,7 @@ public class SimpleFSM : FSM
 
     public NavMeshAgent agent;
     private int currentPoint;
+    private Vector3 destPos;
 
     //Initialize the Finite state machine for the NPC tank
     protected override void Initialize()
@@ -44,6 +45,7 @@ public class SimpleFSM : FSM
         elapsedTime = 0.0f;
         shootRate = 3.0f;
         health = 100;
+        
 
         //Set Random destination point first
         FindNextPoint();
@@ -109,7 +111,7 @@ public class SimpleFSM : FSM
     protected void UpdateChaseState()
     {       
         //TODO: Set the target position as the target squadron's flock position
-        destPos = targetPos;
+        destPos = new Vector3();
 
         //Check the distance with player tank
         //When the distance is near, transition to attack state
@@ -144,6 +146,7 @@ public class SimpleFSM : FSM
 
     protected void UpdateFleeState()
     {
+        Vector3 targetPos = new Vector3();
         //TODO: Calculate distance to squadron to flee from
         if (Vector3.Distance(transform.position, targetPos) > 300.0f)
             curState = FSMState.Patrol;
@@ -234,6 +237,6 @@ public class SimpleFSM : FSM
     protected void MoveTank()
     {
         //transform.Translate(Vector3.forward * Time.deltaTime * curSpeed);
-        agent.SetDestination(targetPos);
+        agent.SetDestination(new Vector3());
     }
 }

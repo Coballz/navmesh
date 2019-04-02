@@ -8,7 +8,7 @@ public class TankAI : FSM
 {
     public NavMeshAgent agent;
     private Vector3 flockingPosition;
-    private Vector3 targetPosition;
+    public Vector3 targetPosition;
     private GameObject targetTank;
     private GameObject bullet;
     private FSMState currentState;
@@ -19,8 +19,8 @@ public class TankAI : FSM
     // Start is called before the first frame update
     void Start()
     {
-        ruleset = new Ruleset();
-        squadAI = gameObject.GetComponentInParent<SquadAI>();
+        squadAI = GetComponent<SquadAI>();
+        ruleset = ScriptableObject.CreateInstance("Ruleset") as Ruleset;
         turret = gameObject.transform.GetChild(0).transform;
         bulletSpawnPoint = turret.GetChild(0).transform;
     }
@@ -39,7 +39,9 @@ public class TankAI : FSM
     private void HandleMovement()
     {
         HandleRotation(targetPosition);
-        agent.SetDestination(targetPosition);
+        agent.speed = ruleset.moveSpeed;
+        Vector3 dest = Combine();
+        agent.SetDestination(dest);
     }
 
     private Vector3 TargetPosition()
@@ -85,7 +87,7 @@ public class TankAI : FSM
 
         foreach (GameObject tank in squadAI.ownTanks)
         {
-            if (tank != null && tank != gameObject)
+            if (tank != null && tank != this)
             {
                 index++;
                 cohesion += tank.transform.position;
@@ -106,9 +108,9 @@ public class TankAI : FSM
         Vector3 separation = new Vector3();
         foreach (GameObject tank in squadAI.ownTanks)
         {
-            if (tank != null && tank != gameObject)
+            if (tank != null && tank != this)
             {
-                Vector3 diff = transform.position - tank.transform.position;
+                Vector3 diff = tank.transform.position - transform.position;
                 if (diff.magnitude > 0)
                     separation += (diff.normalized / (diff.magnitude * diff.magnitude));
             }
@@ -118,7 +120,7 @@ public class TankAI : FSM
 
     private Vector3 CalculateAlignment()
     {
-        return targetPosition - transform.position;
+        return (targetPosition - transform.position).normalized;
     }
 
     public void SetTargetTank(GameObject targetEnemyTank)
