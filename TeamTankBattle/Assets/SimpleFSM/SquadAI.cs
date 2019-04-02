@@ -15,6 +15,8 @@ public class SquadAI : MonoBehaviour
     private Vector3 flockingPosition;           //The average position of our own squad
     private List<Vector3> patrolPoints;         //The positions used for patrolling
 
+    private Ruleset ruleset;
+
     private float distToClosestTank = 300.0f;   //Minimum distance for patrol state
 
     void Start()
@@ -22,6 +24,7 @@ public class SquadAI : MonoBehaviour
         SetOwnTanks();
         SetEnemyTanks();                        //Make sure we know abut the enemy tanks at start
         InitializePatrolPoints();               //Make sure we can start patrolling right away
+        InitializeRuleset();
     }
 
     private void Update()
@@ -44,7 +47,7 @@ public class SquadAI : MonoBehaviour
     //Determines what state the tanks should be set to
     private FSMState SquadLogic()
     {
-        if (distToClosestTank < 300)            //MAGIC NUMBER VERWIJDEREN
+        if (distToClosestTank < )            //MAGIC NUMBER VERWIJDEREN
             return FSMState.Attack;
         return FSMState.Patrol;
     }
@@ -144,5 +147,10 @@ public class SquadAI : MonoBehaviour
         patrolPoints.Add(new Vector3(725, 100, 2320));
         patrolPoints.Add(new Vector3(1520, 100, 2270));
         patrolPoints.Add(new Vector3(2125, 100, 1905));
+    }
+
+    protected void InitializeRuleset()
+    {
+        ruleset = ScriptableObject.CreateInstance<Ruleset>();
     }
 }

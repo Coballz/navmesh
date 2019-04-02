@@ -20,7 +20,7 @@ public class TankAI : FSM
     void Start()
     {
         squadAI = GetComponent<SquadAI>();
-        ruleset = ScriptableObject.CreateInstance("Ruleset") as Ruleset;
+        ruleset = squadAI.GetComponent<Ruleset>();
         turret = gameObject.transform.GetChild(0).transform;
         bulletSpawnPoint = turret.GetChild(0).transform;
     }
@@ -39,23 +39,15 @@ public class TankAI : FSM
     private void HandleMovement()
     {
         HandleRotation(targetPosition);
-        agent.speed = ruleset.moveSpeed;
-        Vector3 dest = Combine();
+        agent.speed = ruleset.moveSpeedWhenDamaged;
+        Vector3 dest = transform.position + Combine();
+        print(this.name + ", " + dest);
         agent.SetDestination(dest);
     }
 
-    private Vector3 TargetPosition()
+    private void SetTargetPosition(Vector3 target)
     {
-        /*
-        float distanceToPoint = Vector3.Distance(transform.position, targetPosition);
-        float distanceToFlock = Vector3.Distance(transform.position, flockingPosition);
-        float pointWeight = distanceToPoint / (distanceToPoint + distanceToFlock);
-        float flockWeight = distanceToFlock / (distanceToPoint + distanceToFlock);
-        Vector3 endPoint = ((targetPosition - transform.position) * pointWeight) + ((flockingPosition - transform.position) * flockWeight);
-        //TODO: Middelen flockingPosition en targetTank.transform.position
-        return endPoint;
-        */
-        return new Vector3();
+        this.targetPosition = target;
     }
 
     private void HandleRotation(Vector3 destPos)
@@ -66,18 +58,18 @@ public class TankAI : FSM
 
     private Vector3 Combine()
     {
-        Vector3 cohesion = CalculateCohesion();
-        Vector3 alignment = CalculateAlignment();
-        Vector3 separation = CalculateSeparation();
+        Vector3 cohesion = CalculateCohesion();         //raw cohesion vector
+        Vector3 alignment = CalculateAlignment();       //raw alignment vector
+        Vector3 separation = CalculateSeparation();     //raw separation vector
 
-        float totalMag = cohesion.magnitude + alignment.magnitude + separation.magnitude;
+        print(this.name + ", " + cohesion + ", " + alignment + ", " + separation);
 
-        Vector3 cohModified = cohesion * (cohesion.magnitude / totalMag);
-        Vector3 aliModified = alignment * (alignment.magnitude / totalMag);
-        Vector3 sepModified = separation * (separation.magnitude / totalMag);
+        //Vector3 cohModified = cohesion * (cohesion.magnitude / totalMag);
+        //Vector3 aliModified = alignment * (alignment.magnitude / totalMag);
+        //Vector3 sepModified = separation * (separation.magnitude / totalMag);
 
-        Vector3 targetPoint = cohModified + aliModified + sepModified;
-        return targetPoint;
+        Vector3 targetPoint = cohesion + separation + alignment;
+        return targetPoint.normalized;
     }
 
     private Vector3 CalculateCohesion()
@@ -87,20 +79,20 @@ public class TankAI : FSM
 
         foreach (GameObject tank in squadAI.ownTanks)
         {
-            if (tank != null && tank != this)
+            if (tank != null && tank.name != this.name)
             {
                 index++;
                 cohesion += tank.transform.position;
             }
         }
-
         if (index == 0)
             return cohesion;
 
         cohesion /= index;
-        cohesion.Normalize();
 
-        return cohesion;
+        cohesion -= transform.position;
+        print("cohesion " + cohesion);
+        return cohesion.normalized;
     }
 
     private Vector3 CalculateSeparation()
@@ -108,15 +100,16 @@ public class TankAI : FSM
         Vector3 separation = new Vector3();
         foreach (GameObject tank in squadAI.ownTanks)
         {
-            if (tank != null && tank != this)
+            if (tank != null && tank.name != this.name)
             {
-                Vector3 diff = tank.transform.position - transform.position;
-                if (diff.magnitude > 0)
-                    separation += (diff.normalized / (diff.magnitude * diff.magnitude));
+                Vector3 difference = transform.position - tank.transform.position;
+                separation += difference.normalized / (difference.sqrMagnitude);
             }
         }
-        return separation;
+        print(separation.normalized);
+        return separation.normalized.normalized;
     }
+
 
     private Vector3 CalculateAlignment()
     {
