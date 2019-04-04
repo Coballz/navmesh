@@ -8,6 +8,7 @@ public class Ruleset : ScriptableObject
     public float moveSpeed = 150.0f;
     public float moveSpeedWhenDamaged = 75.0f;
     public float spottingRange = 300.0f;
+    public float GTFORange = 300.0f;
     public float attackRange = 150.0f;
     public float rotationSpeed = 5.0f;
     public float fireRate = 3.0f;
@@ -21,6 +22,6 @@ public class Ruleset : ScriptableObject
         Patrol,
         Offense,
         Dead,
-        FocusFire
+        GTFO
     }
 }

@@ -7,19 +7,20 @@ public class SquadAI : MonoBehaviour
 {
     public GameObject[] ownTanks;              //List with our own tanks
 
-    private GameObject[] squadOneTanks;         //enemy team one
-    private GameObject[] squadTwoTanks;         //enemy team two
-    private GameObject[] squadThreeTanks;       //enemy team three
+    public GameObject[] squadOneTanks;         //enemy team one
+    public GameObject[] squadTwoTanks;         //enemy team two
+    public GameObject[] squadThreeTanks;       //enemy team three
 
-    private GameObject targetTank;              //The tank to be used for the state logic
-    private Vector3 squadPosition;              //The average position of our own squad
+    public GameObject targetTank;              //The tank to be used for the state logic
+    public Vector3 squadPosition;              //The average position of our own squad
     public List<Vector3> patrolPoints;          //The positions used for patrolling
 
-    private FSMState currentState;
+    public FSMState currentState;
 
     private Ruleset ruleset;
 
     private float distToClosestTank = 0;        //Minimum distance for patrol state
+    private int noNearbyTanks = 0;
 
     void Start()
     {
@@ -28,22 +29,41 @@ public class SquadAI : MonoBehaviour
         InitializeRuleset();                    //Make sure all rules are enforced
         SetOwnTanks();                          //Make sure we know about our own squadron
         SetEnemyTanks();                        //Make sure we know about the enemy tanks at start
-        UpdateSquadPosition();
     }
 
     private void Update()
     {
+        UpdateSquadPosition();
         CycleEnemyTanks();
+        UpdateNearbyTanks();
+        SquadLogic();
+        UpdateSquadTarget();
+        UpdateSquadState();
     }
 
     //Determines what state the tanks should be set to
-    private void SquadLogic(GameObject tank)
+    private void SquadLogic()
     {
-        if (distToClosestTank <= ruleset.spottingRange)            
+        if (currentState != FSMState.GTFO)
         {
-            currentState = FSMState.Offense;
+            if (noNearbyTanks >= NumberOfAliveTanks())
+            {
+                SetFurthestPatrolPoint();
+                currentState = FSMState.GTFO;     
+                return;
+            }
+            if (Vector3.Distance(squadPosition, targetTank.transform.position) <= ruleset.spottingRange)
+            {
+                currentState = FSMState.Offense;
+                return;
+            }
+            currentState = FSMState.Patrol;
         }
-        currentState = FSMState.Patrol;
+        else if (noNearbyTanks == 0)
+        {
+            SetPrevPatrolPoint();
+            currentState = FSMState.Patrol;
+        }
     }
 
     //Loops through all enemy tanks and updates the targetTank if it finds one that is closer
@@ -72,13 +92,47 @@ public class SquadAI : MonoBehaviour
         foreach (GameObject tank in ownTanks)
         {
             float distance = Vector3.Distance(squadPosition, enemyTank.transform.position);
-            if ((tank != null && distance < distToClosestTank) || distToClosestTank == 0)
+            if (((tank != null && distance < distToClosestTank) && distance <= ruleset.spottingRange) || distToClosestTank == 0)
             {
-                distToClosestTank = distance;
                 targetTank = enemyTank;
+                distToClosestTank = distance;
             }
         }
     }
+
+    //Returns the number of living tanks in our squadron
+    private int NumberOfAliveTanks()
+    {
+        int value = 0;
+        foreach (GameObject tank in ownTanks)
+        {
+            if (tank != null)
+                value++;
+        }
+        return value;
+    }
+
+    //Updates the number of nearby tanks
+    private void UpdateNearbyTanks()
+    {
+        int i = 0;
+        foreach (GameObject tank in squadOneTanks)
+        {
+            if (Vector3.Distance(squadPosition, tank.transform.position) <= ruleset.GTFORange)
+                i++;
+        }
+        foreach (GameObject tank in squadTwoTanks)
+        {
+            if (Vector3.Distance(squadPosition, tank.transform.position) <= ruleset.GTFORange)
+                i++;
+        }
+        foreach (GameObject tank in squadThreeTanks)
+        {
+            if (Vector3.Distance(squadPosition, tank.transform.position) <= ruleset.GTFORange)
+                i++;
+        }
+        noNearbyTanks = i;
+    } 
 
     //Set all tanks' state
     private void UpdateSquadState()
@@ -90,6 +144,16 @@ public class SquadAI : MonoBehaviour
         }
     }
 
+    //Set the squad's targeted tank
+    private void UpdateSquadTarget()
+    {
+        foreach (GameObject tank in ownTanks)
+        {
+            if (tank != null)
+                tank.GetComponent<TankAI>().SetTargetTank(targetTank);
+        }
+    }
+
     //Update the squad's central position for reference
     private void UpdateSquadPosition()
     {
@@ -97,14 +161,25 @@ public class SquadAI : MonoBehaviour
         int noTanks = 0;
         foreach (GameObject tank in ownTanks)
         {
+            if (tank != null)
             center += tank.transform.position;
             noTanks++;
         }
         squadPosition = center / noTanks;
     }
 
+    //Update the squad's patrol point in case of state switching
+    private void UpdateSquadPatrolPoint(int i)
+    {
+        foreach (GameObject tank in ownTanks)
+        {
+            if (tank != null)
+                tank.GetComponent<TankAI>().SetPatrolPoint(i);
+        }
+    }
+
     //Update the next patrolpoint for the entire squad to chase after breaking out of Offense state
-    private int GetClosestPatrolPoint()
+    private void SetClosestPatrolPoint()
     {
         UpdateSquadPosition();
         Vector3 target = new Vector3();
@@ -112,9 +187,39 @@ public class SquadAI : MonoBehaviour
         for (int i = 0; i < patrolPoints.Count; i++)
         {
             if (target == new Vector3() || Vector3.Distance(squadPosition, patrolPoints[i]) < Vector3.Distance(squadPosition, target))
+            {
                 point = i;
+                target = patrolPoints[i];
+            }
         }
-        return point;
+        UpdateSquadPatrolPoint(point);
+    }
+
+    //Update the next patrolpoint for the entire squad to chase after running into GTFO state
+    private void SetFurthestPatrolPoint()
+    {
+        UpdateSquadPosition();
+        Vector3 target = new Vector3();
+        int point = 0;
+        for (int i = 0; i < patrolPoints.Count; i++)
+        {
+            if (target == new Vector3() || Vector3.Distance(squadPosition, patrolPoints[i]) > Vector3.Distance(squadPosition, target))
+            {
+                point = i;
+                target = patrolPoints[i];
+            }
+        }
+        UpdateSquadPatrolPoint(point);
+    }
+
+    //Sets previous patrol point after breaking out of GTFO state
+    private void SetPrevPatrolPoint()
+    {
+        foreach (GameObject tank in ownTanks)
+        {
+            if (tank != null)
+                tank.GetComponent<TankAI>().SetPatrolPoint(tank.GetComponent<TankAI>().currentPatrolPoint);
+        }
     }
 
     //Add all tanks of this squadron to an array
@@ -126,9 +231,9 @@ public class SquadAI : MonoBehaviour
     //Gets all enemy tanks and adds them to the GameObject lists
     protected void SetEnemyTanks()
     {
-        squadOneTanks = GameObject.FindGameObjectsWithTag("squadOneTank");
-        squadOneTanks = GameObject.FindGameObjectsWithTag("squadTwoTank");
-        squadOneTanks = GameObject.FindGameObjectsWithTag("squadThreeTank");
+        squadOneTanks = GameObject.FindGameObjectsWithTag("Team1");
+        squadOneTanks = GameObject.FindGameObjectsWithTag("Team2");
+        squadOneTanks = GameObject.FindGameObjectsWithTag("Team3");
     }
 
     //Initialize a route to patrol

@@ -126,8 +126,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   agent: {fileID: 36845864746624567}
-  patrolPoint: {x: 0, y: 0, z: 0}
+  targetPosition: {x: 0, y: 0, z: 0}
   health: 100
+  Bullet: {fileID: 100000, guid: 8a378f96957c05141b5a7802128a30bf, type: 3}
+  currentState: 0
 --- !u!195 &36845864746624567
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -163,7 +165,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ownTanks: []
+  squadOneTanks: []
+  squadTwoTanks: []
+  squadThreeTanks: []
+  targetTank: {fileID: 0}
+  squadPosition: {x: 0, y: 0, z: 0}
   patrolPoints: []
+  currentState: 0
 --- !u!1 &3390080114886581851
 GameObject:
   m_ObjectHideFlags: 0

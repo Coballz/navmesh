@@ -7,14 +7,14 @@ using static Ruleset;
 public class TankAI : FSM
 {
     public NavMeshAgent agent;
-    public Vector3 patrolPoint;
-    private GameObject targetTank;
-    private GameObject bullet;
-    private FSMState currentState;
-    private SquadAI squadAI;
-    private int currentPatrolPoint = 2;
+    public Vector3 targetPosition;
     public float health = 100.0f;
 
+    private GameObject targetTank;
+    public GameObject Bullet;
+    public FSMState currentState;
+    private SquadAI squadAI;
+    public int currentPatrolPoint = 2;
     private Ruleset ruleset;
 
     // Start is called before the first frame update
@@ -24,34 +24,68 @@ public class TankAI : FSM
         ruleset = ScriptableObject.CreateInstance("Ruleset") as Ruleset;
         turret = gameObject.transform.GetChild(0).transform;
         bulletSpawnPoint = turret.GetChild(0).transform;
-        patrolPoint = GetPatrolPoint(currentPatrolPoint);
+        targetPosition = GetPatrolPoint(currentPatrolPoint);
     }
 
     // Update is called once per frame
     void Update()
     {
-        HandleMovement();
+        elapsedTime += Time.deltaTime;
+        HandleStates();
         HandleRotation();
+        HandleMovement();
+        HandleShooting();
+    }
+
+    private void HandleStates()
+    {
+        switch (currentState)
+        {
+            case FSMState.Patrol:
+                if (Vector3.Distance(transform.position, targetPosition) < 100.0f)
+                    GetNextPatrolPoint();
+                break;
+            case FSMState.Offense:
+                if (Vector3.Distance(transform.position, targetPosition) <= ruleset.attackRange)
+                    targetPosition = transform.position;
+                else targetPosition = targetTank.transform.position;
+                break;
+            case FSMState.GTFO:
+                print(this.name + " is " + Vector3.Distance(transform.position, targetPosition) + "units from GTFOpoint");
+                if (Vector3.Distance(transform.position, targetPosition) <= 150.0f)
+                    SetState(FSMState.Patrol);
+                break;
+        }
     }
 
     public void SetState(FSMState state)
     {
+        if (state == FSMState.Dead)
+        {
+            Destroy(this.gameObject);
+        }
         this.currentState = state;
     }
 
     private void HandleMovement()
     {
-        if (Vector3.Distance(transform.position, patrolPoint) < 100.0f)
-            GetNextPatrolPoint();
-        Vector3 dest = transform.position + Combine();
-        print(this.name + "'s target position: " + dest);
-        agent.SetDestination(patrolPoint);
+        //transform.position += Combine();
+        agent.SetDestination(targetPosition);
     }
 
     private void HandleRotation()
     {
-        Quaternion turretRotation = Quaternion.LookRotation(patrolPoint - turret.position);
-        turret.rotation = Quaternion.Slerp(turret.rotation, turretRotation, Time.deltaTime * ruleset.rotationSpeed);
+        if (Vector3.Distance(transform.position, targetTank.transform.position) <= ruleset.attackRange)
+        {
+            Quaternion turretRotation = Quaternion.LookRotation(targetTank.transform.position - turret.position);
+            turret.rotation = Quaternion.Slerp(turret.rotation, turretRotation, Time.deltaTime * ruleset.rotationSpeed);
+        }
+    }
+
+    private void HandleShooting()
+    {
+        if (currentState == FSMState.Offense && Vector3.Distance(transform.position, targetTank.transform.position) < ruleset.attackRange)
+            Shoot();
     }
 
     private Vector3 CalculateCohesion()
@@ -73,7 +107,6 @@ public class TankAI : FSM
         cohesion /= index;
 
         cohesion -= transform.position;
-        print("cohesion " + cohesion);
         return Vector3.Normalize(cohesion);
     }
 
@@ -92,23 +125,32 @@ public class TankAI : FSM
         return separation;
     }
 
+    /*
     private Vector3 CalculateAlignment()
     {
-        Vector3 alignment = patrolPoint - transform.position;
+        Vector3 alignment = targetPosition - transform.position;
         alignment = Vector3.Normalize(alignment);
         return alignment;
     }
+    */
 
     private Vector3 Combine()
     {
         Vector3 cohesion = CalculateCohesion();         //raw cohesion vector
         Vector3 separation = CalculateSeparation();     //raw separation vector
-        Vector3 alignment = CalculateAlignment();       //raw alignment vector
 
-        print(this.name + ", cohesion: " + cohesion + ", alignment: " + alignment + ", separation: " + separation);
+        Vector3 targetPoint = cohesion * ruleset.cohC + separation * ruleset.sepC;
+        return Vector3.Normalize(targetPoint) * 0.2f;
+    }
 
-        Vector3 targetPoint = cohesion * ruleset.cohC + separation * ruleset.sepC + alignment * ruleset.aliC;
-        return Vector3.Normalize(targetPoint);
+    private void Shoot()
+    {
+        if (elapsedTime >= ruleset.fireRate)
+        {
+            //Shoot the bullet
+            Instantiate(Bullet, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
+            elapsedTime = 0.0f;
+        }
     }
 
     public void SetTargetTank(GameObject targetEnemyTank)
@@ -121,7 +163,7 @@ public class TankAI : FSM
         currentPatrolPoint++;
         if (currentPatrolPoint == squadAI.patrolPoints.Count)
             currentPatrolPoint = 0;
-        patrolPoint = GetPatrolPoint(currentPatrolPoint);
+        targetPosition = GetPatrolPoint(currentPatrolPoint);
     }
 
     public Vector3 GetPatrolPoint(int i)
@@ -131,7 +173,7 @@ public class TankAI : FSM
 
     public void SetPatrolPoint(int i)
     {
-        this.currentPatrolPoint = i;
+        this.targetPosition = GetPatrolPoint(i);
     }
 
     void OnCollisionEnter(Collision col)
