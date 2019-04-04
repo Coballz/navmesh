@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 3390080114884378777}
   - component: {fileID: 3390080114880198235}
   - component: {fileID: 3390080114883427643}
-  - component: {fileID: 1973373409668950830}
   - component: {fileID: 1043706494815611144}
   - component: {fileID: 36845864746624567}
+  - component: {fileID: 6677969259350508235}
   m_Layer: 0
   m_Name: TestTank
   m_TagString: Team4
@@ -113,19 +113,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &1973373409668950830
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3390080114886581849}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 33103b2c399f8644385a192b7ef63d68, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ownTanks: []
 --- !u!114 &1043706494815611144
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -139,7 +126,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   agent: {fileID: 36845864746624567}
-  targetPosition: {x: 75, y: 0.1, z: 75}
+  patrolPoint: {x: 0, y: 0, z: 0}
+  health: 100
 --- !u!195 &36845864746624567
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -149,19 +137,33 @@ NavMeshAgent:
   m_GameObject: {fileID: 3390080114886581849}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 21.750156
-  m_Speed: 3.5
-  m_Acceleration: 8
+  m_Radius: 40
+  m_Speed: 50
+  m_Acceleration: 60
   avoidancePriority: 50
-  m_AngularSpeed: 120
-  m_StoppingDistance: 0
+  m_AngularSpeed: 60
+  m_StoppingDistance: 50
   m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
+  m_AutoBraking: 0
   m_AutoRepath: 1
-  m_Height: 29.843636
-  m_BaseOffset: 14.921818
+  m_Height: 20
+  m_BaseOffset: 5
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &6677969259350508235
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3390080114886581849}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33103b2c399f8644385a192b7ef63d68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ownTanks: []
+  patrolPoints: []
 --- !u!1 &3390080114886581851
 GameObject:
   m_ObjectHideFlags: 0
