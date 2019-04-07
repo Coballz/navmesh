@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Team4;
 
-public class Bullet : MonoBehaviour
+public class Team4Bullet : MonoBehaviour
 {
     //Explosion Effect
 
